@@ -1,31 +1,46 @@
 #![allow(unused_variables)]
 
+type Message = String;
+
 #[derive(Debug)]
-enum StatusMessage {
-    Ok,
+struct Mailbox {
+    messages: Vec<Message>,
 }
 
 #[derive(Debug)]
 struct CubeSat {
     id: u64,
+    mailbox: Mailbox,
 }
 
-fn check_status(sat_id: CubeSat) -> StatusMessage {
-    StatusMessage::Ok
+struct GroundStation {}
+
+impl GroundStation {
+    fn send(&self, to: &mut CubeSat, msg: Message) {
+        to.mailbox.messages.push(msg)
+    }
+}
+
+impl CubeSat {
+    fn recv(&mut self) -> Option<Message> {
+        self.mailbox.messages.pop()
+    }
 }
 
 fn main() {
-    let sat_a = CubeSat { id: 0 };
-    let sat_b = CubeSat { id: 1 };
-    let sat_c = CubeSat { id: 2 };
+    let base = GroundStation {};
+    let mut sat_a = CubeSat {
+        id: 0,
+        mailbox: Mailbox { messages: vec![] },
+    };
 
-    let a_status = check_status(sat_a);
-    let b_status = check_status(sat_b);
-    let c_status = check_status(sat_c);
-    println!("a: {:?}, b: {:?}, c: {:?}", a_status, b_status, c_status);
+    println!("t0: {:?}", sat_a);
 
-    let a_status = check_status(sat_a);
-    let b_status = check_status(sat_b);
-    let c_status = check_status(sat_c);
-    println!("a: {:?}, b: {:?}, c: {:?}", a_status, b_status, c_status);
+    base.send(&mut sat_a, Message::from("hello"));
+    println!("t1: {:?}", sat_a);
+
+    let msg = sat_a.recv();
+    println!("t2: {:?}", sat_a);
+
+    println!("msg: {:?}", msg);
 }
